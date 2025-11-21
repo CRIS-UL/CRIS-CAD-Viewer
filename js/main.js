@@ -78,9 +78,32 @@ function setModelButtonActive(modelId) {
 function loadModelFromMenu(modelDef) {
   viewer.setAutoRotate(false);
   document.getElementById("autoRotateBtn").classList.remove("active");
-  viewer.loadModel(modelDef.path, modelDef.label);
+
+  // ✅ Update loading message here
+  statusText.textContent = "Loading, please wait. May take up to 1 minute…";
+  errorText.style.display = "none";
+  errorText.textContent = "";
+
+  fetch(modelDef.path)
+    .then((res) => {
+      if (!res.ok) throw new Error(`Failed to fetch model (${res.status})`);
+      return res.arrayBuffer();
+    })
+    .then((data) => {
+      const blob = new Blob([data], { type: "model/gltf-binary" });
+      const blobUrl = URL.createObjectURL(blob);
+      viewer.loadModel(blobUrl, modelDef.label);
+    })
+    .catch((err) => {
+      console.error("Error loading model:", err);
+      statusText.textContent = "Failed to load model";
+      errorText.style.display = "block";
+      errorText.textContent = "Failed to load model";
+    });
+
   setModelButtonActive(modelDef.id);
 }
+
 
 // ----- UI bindings -----
 
