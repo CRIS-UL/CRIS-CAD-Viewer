@@ -64,31 +64,31 @@ export class CadViewer {
     this.autoRotate = enabled;
   }
 
-toggleWireframe() {
-  if (!this.model) return;
+  toggleWireframe() {
+    if (!this.model) return;
 
-  this.model.traverse((child) => {
-    if (child.isMesh) {
-      if (!child.userData.originalMaterial) {
-        // Store original material
-        child.userData.originalMaterial = child.material;
+    this.model.traverse((child) => {
+      if (child.isMesh) {
+        if (!child.userData.originalMaterial) {
+          // Store original material
+          child.userData.originalMaterial = child.material;
+        }
+
+        const isWireframe = child.material.wireframe;
+
+        if (!isWireframe) {
+          // Apply wireframe
+          const wireMat = child.material.clone();
+          wireMat.wireframe = true;
+          wireMat.color.set(0x000000); // Optional: wire color
+          child.material = wireMat;
+        } else {
+          // Restore original material
+          child.material = child.userData.originalMaterial;
+        }
       }
-
-      const isWireframe = child.material.wireframe;
-
-      if (!isWireframe) {
-        // Apply wireframe
-        const wireMat = child.material.clone();
-        wireMat.wireframe = true;
-        wireMat.color.set(0x000000); // Optional: wire color
-        child.material = wireMat;
-      } else {
-        // Restore original material
-        child.material = child.userData.originalMaterial;
-      }
-    }
-  });
-}
+    });
+  }
 
 
   toggleBackground() {
