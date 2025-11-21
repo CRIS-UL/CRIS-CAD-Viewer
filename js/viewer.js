@@ -64,49 +64,32 @@ export class CadViewer {
     this.autoRotate = enabled;
   }
 
-  toggleWireframe() {
-    this.wireframeEnabled = !this.wireframeEnabled;
-    if (!this.model) return;
+toggleWireframe() {
+  if (!this.model) return;
 
-    this.model.traverse((child) => {
-      if (!child.isMesh) return;
+  this.model.traverse((child) => {
+    if (child.isMesh) {
+      if (!child.userData.originalMaterial) {
+        // Store original material
+        child.userData.originalMaterial = child.material;
+      }
 
-      const original = child.material;
-      const mats = Array.isArray(original) ? original : [original];
+      const isWireframe = child.material.wireframe;
 
-      const fixedMats = mats.map((m) => {
-        if (!m) return m;
+      if (!isWireframe) {
+        // Apply wireframe
+        const wireMat = child.material.clone();
+        wireMat.wireframe = true;
+        wireMat.color.set(0x000000); // Optional: wire color
+        child.material = wireMat;
+      } else {
+        // Restore original material
+        child.material = child.userData.originalMaterial;
+      }
+    }
+  });
+}
 
-        let r = m.color?.r ?? 0;
-        let g = m.color?.g ?? 0;
-        let b = m.color?.b ?? 0;
-
-        const isVeryDark = (r + g + b) < 0.15;
-        const isPBRMetal =
-          (m.metalness !== undefined && m.metalness > 0.4) ||
-          (m.roughness !== undefined && m.roughness < 0.25);
-        const isGlossWorkflow =
-          m.specular !== undefined || m.glossiness !== undefined;
-
-        const broken = isVeryDark || isPBRMetal || isGlossWorkflow;
-
-        if (broken) {
-          return new THREE.MeshStandardMaterial({
-            color: new THREE.Color(0.78, 0.78, 0.83),
-            metalness: 0.85,
-            roughness: 0.25,
-            side: THREE.DoubleSide
-          });
-        }
-
-        m.side = THREE.DoubleSide;
-        m.needsUpdate = true;
-        return m;
-      });
-
-      child.material = Array.isArray(original) ? fixedMats : fixedMats[0];
-    });
-  }
 
   toggleBackground() {
     this.darkBg = !this.darkBg;
@@ -376,6 +359,8 @@ export class CadViewer {
     }
 
     this._setStatus("Loaded");
+    statusText.style.color = "green";
+
   }
 
   // small runtime helpers to adjust exposure while testing

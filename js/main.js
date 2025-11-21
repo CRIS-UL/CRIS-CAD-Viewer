@@ -32,7 +32,6 @@ const viewer = new CadViewer(canvas, viewerPanel, {
   },
   onModelChange: ({ name, src, bounds }) => {
     modelTitleEl.textContent = "Design: " + name;
-    fileNameEl.textContent = src;
 
     if (bounds && bounds.size) {
       const s = bounds.size;
@@ -81,6 +80,7 @@ function loadModelFromMenu(modelDef) {
 
   // ✅ Update loading message here
   statusText.textContent = "Loading, please wait. May take up to 1 minute…";
+  statusText.style.color = "red";
   errorText.style.display = "none";
   errorText.textContent = "";
 
