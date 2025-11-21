@@ -49,16 +49,33 @@ const viewer = new CadViewer(canvas, viewerPanel, {
 // ----- Model menu -----
 let activeModelId = null;
 
+function getDefaultModel() {
+  for (const category of MODELS) {
+    for (const model of category.models) {
+      if (model.default) return model;
+    }
+  }
+  return null;
+}
+
 function initModelMenu() {
   modelButtonsContainer.innerHTML = "";
-  MODELS.forEach((m) => {
-    const btn = document.createElement("button");
-    btn.textContent = m.label;
-    btn.dataset.modelId = m.id;
-    btn.addEventListener("click", () => loadModelFromMenu(m));
-    modelButtonsContainer.appendChild(btn);
+
+  MODELS.forEach((group) => {
+    const groupTitle = document.createElement("h4");
+    groupTitle.textContent = group.category;
+    modelButtonsContainer.appendChild(groupTitle);
+
+    group.models.forEach((m) => {
+      const btn = document.createElement("button");
+      btn.textContent = m.label;
+      btn.dataset.modelId = m.id;
+      btn.addEventListener("click", () => loadModelFromMenu(m));
+      modelButtonsContainer.appendChild(btn);
+    });
   });
 }
+
 
 function clearModelButtonActive() {
   const buttons = modelButtonsContainer.querySelectorAll("button");
@@ -164,8 +181,9 @@ sidebarToggleBtn.addEventListener("click", () => {
   sidebarToggleIcon.textContent = isCollapsed ? "▶" : "☰";
 });
 
-// ----- Init -----
+
 initModelMenu();
-if (MODELS.length > 0) {
-  loadModelFromMenu(MODELS[0]);
+const defaultModel = getDefaultModel();
+if (defaultModel) {
+  loadModelFromMenu(defaultModel);
 }
